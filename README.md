@@ -23,7 +23,7 @@ Then open:
 
 | Service | URL |
 |---|---|
-| Storefront (web) | http://localhost:5173 |
+| Storefront (web) | http://localhost:5180 |
 | API | http://localhost:3000 |
 | API docs (Swagger) | http://localhost:3000/docs |
 | Mailhog (emails) | http://localhost:8025 |
@@ -31,32 +31,31 @@ Then open:
 
 The API container automatically runs migrations and seeds the database on first boot.
 
-### Option B — Local dev (pnpm)
+### Option B — Local dev (npm)
 
-Prerequisites: **Node 20+**, **pnpm 9+**, and Postgres + Redis running (use `docker compose up -d postgres redis minio mailhog` for the infra only).
+Prerequisites: **Node 20+**, Postgres + Redis (or `docker compose up -d postgres redis minio mailhog`).
 
 ```bash
 cp .env.example .env
-pnpm install
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
 
-# Database
-pnpm db:generate
-pnpm db:migrate
-pnpm db:seed
+cd backend && npm install && npm run prisma:generate && npm run prisma:migrate && npm run prisma:seed
+cd ../frontend && npm install
 
-# Run both apps
-pnpm dev
-# or individually:
-pnpm dev:api   # http://localhost:3000
-pnpm dev:web   # http://localhost:5173
+# Run both (two terminals):
+npm --prefix backend run start:dev   # http://localhost:3000
+npm --prefix frontend run dev        # http://localhost:5173
 ```
 
 ---
 
 ## Seeding with your own product images
 
-Place your images in category subfolders and point `SEED_IMAGES_PATH` at the parent folder
-(already set in `.env.example`):
+Place your images in `backend/uploads/products/<category>/` (e.g. `shoes/shoes-1.jpg`).
+The seeder creates **one product per image file** and serves them from `/uploads/products/...`.
+
+Optional: set `SEED_IMAGES_PATH` to import from an external folder on first seed:
 
 ```
 <SEED_IMAGES_PATH>/
@@ -64,12 +63,7 @@ Place your images in category subfolders and point `SEED_IMAGES_PATH` at the par
 ├── jacket/     ├── belt/     └── keys/
 ```
 
-The seeder maps `jacket → jackets` and `belt → belts` automatically, copies the images into
-`apps/api/uploads/products/<category>/`, and generates realistic products, variants, tags and
-discounts. If the path is missing, it falls back to high-quality placeholder images so the app
-always looks great.
-
-Re-run anytime with `pnpm db:seed`.
+The seeder maps `jacket → jackets` and `belt → belts`, copies into `backend/uploads/products/`, then links each file to one product. Re-run seed anytime with `npm --prefix backend run prisma:seed`.
 
 ---
 
@@ -101,13 +95,12 @@ test keys to enable the full Stripe flow + webhook (`/api/v1/payments/webhook`).
 
 ```
 gofla/
-├── apps/
-│   ├── api/      # NestJS modular monolith (see ARCHITECTURE.md)
-│   └── web/      # React app, Feature-Sliced Design
-├── packages/
-│   └── shared/   # Shared TypeScript contracts (type-only)
-├── infra/nginx/  # Reverse proxy config (prod)
-├── docker-compose.yml / docker-compose.prod.yml
+├── frontend/     # React + Vite storefront (deploy → Vercel)
+├── backend/      # NestJS API + Prisma (deploy → Render)
+├── infra/nginx/  # Reverse proxy config (prod Docker)
+├── docker-compose.yml
+├── docker-compose.prod.yml
+├── render.yaml   # Render blueprint
 └── docs: ARCHITECTURE.md · DEPLOYMENT.md · API.md
 ```
 
@@ -115,9 +108,11 @@ gofla/
 
 | Command | Description |
 |---|---|
-| `pnpm dev` | Run web + api in watch mode |
-| `pnpm build` | Build all packages |
-| `pnpm test` | Run all unit tests |
+| `npm --prefix backend run start:dev` | API in watch mode |
+| `npm --prefix frontend run dev` | Web dev server |
+| `npm run db:migrate` | Prisma migrate (backend) |
+| `npm run db:seed` | Seed database |
+| `docker compose up --build` | Full local stack |
 | `pnpm typecheck` | Type-check all packages |
 | `pnpm lint` | Lint all packages |
 | `pnpm db:migrate` / `db:seed` / `db:generate` | Prisma helpers |

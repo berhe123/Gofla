@@ -1,0 +1,12 @@
+**/node_modules
+**/dist
+**/build
+**/.vite
+**/coverage
+**/.git
+**/.env
+**/.env.local
+.pg-data
+.minio-data
+playwright-report
+test-results
