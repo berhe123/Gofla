@@ -20,13 +20,3 @@ RUN mkdir -p /app/uploads
 EXPOSE 3000
 CMD ["sh", "-c", "npx prisma db push && node dist/main.js"]
 
-FROM node:20-alpine AS development
-WORKDIR /app
-RUN apk add --no-cache openssl libc6-compat
-COPY package.json package-lock.json* ./
-RUN npm install
-COPY prisma ./prisma/
-RUN npx prisma generate
-COPY . .
-EXPOSE 3000
-CMD ["sh", "-c", "npx prisma db push && npm run prisma:seed && npm run start:dev"]
