@@ -94,4 +94,10 @@ docker compose -f docker-compose.prod.yml up --build -d
 
 **Fix:** Keep `production` as the **final** stage in `backend/Dockerfile`, push to GitHub, and redeploy.
 
-**Product images on Render:** `backend/uploads/` is not in git. Seed still creates admin/customer users; add S3 or a persistent disk for product images in production.
+**Symptom:** Build succeeds, logs show `Running seed command ts-node prisma/seed.ts`, then `No open ports detected` / exit 1.
+
+**Cause:** The production container was running the full Prisma seed (`ts-node`) before `node dist/main.js`. That seed is slow and never binds a port, so Render times out.
+
+**Fix:** Production uses `scripts/render-start.sh`: `prisma db push --skip-generate` → fast `seed-bootstrap.js` (admin + demo user only) → `node dist/main.js`. Do **not** run `npx prisma db seed` on Render startup.
+
+**Product images on Render:** `backend/uploads/` is not in git. Bootstrap still creates admin/customer users; add S3 or a persistent disk for product images in production.

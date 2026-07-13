@@ -251,12 +251,24 @@ async function main() {
   for (const t of TAGS_POOL) tagIds[t] = await ensureTag(t);
 
   // 3) Reset catalog and rebuild from local uploads (1 image = 1 product)
-  await resetCatalog();
+  // Never wipe production data on a full seed — use seed-bootstrap.ts on Render instead.
+  if (process.env.NODE_ENV === 'production') {
+    console.log('  ↳ skipping catalog reset in production (set NODE_ENV=development for full reseed)');
+  } else {
+    await resetCatalog();
+  }
 
   const images = collectImages();
   let productCount = 0;
   const createdProductIds: string[] = [];
 
+  if (process.env.NODE_ENV === 'production' && Object.values(images).every((imgs) => imgs.length === 0)) {
+    console.log('  ↳ no local product images in production — skipping catalog seed');
+    console.log('\n✅ Seed complete (users only)');
+    return;
+  }
+
+  if (process.env.NODE_ENV !== 'production') {
   for (const [slug, meta] of Object.entries(CATEGORY_META)) {
     const imgs = images[slug];
     if (imgs.length === 0) {
@@ -342,6 +354,7 @@ async function main() {
   }
 
   console.log(`\n✅ Seed complete: ${productCount} products from ${UPLOAD_ROOT}`);
+  }
 }
 
 main()

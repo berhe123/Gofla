@@ -19,8 +19,32 @@ async function bootstrap() {
 
   app.useLogger(app.get(Logger));
 
-  const corsOrigin = process.env.CORS_ORIGIN?.split(',') ?? ['http://localhost:5173'];
-  app.enableCors({ origin: corsOrigin, credentials: true });
+  const allowedOrigins = (process.env.CORS_ORIGIN ?? 'http://localhost:5173')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
+  const isAllowedOrigin = (origin?: string) => {
+    if (!origin) return true;
+    if (allowedOrigins.includes(origin)) return true;
+    if (process.env.NODE_ENV === 'production') {
+      try {
+        const host = new URL(origin).hostname;
+        if (host.endsWith('.vercel.app') || host.endsWith('.onrender.com')) return true;
+      } catch {
+        /* ignore */
+      }
+    }
+    return false;
+  };
+
+  app.enableCors({
+    origin: (origin, callback) => {
+      if (isAllowedOrigin(origin)) return callback(null, true);
+      callback(new Error(`Origin ${origin} not allowed by CORS`));
+    },
+    credentials: true,
+  });
 
   app.use(
     helmet({
