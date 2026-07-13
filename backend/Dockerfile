@@ -7,6 +7,7 @@ COPY prisma ./prisma/
 RUN npx prisma generate
 COPY . .
 RUN npm run build
+RUN test -f dist/main.js || test -f dist/src/main.js
 RUN npx tsc prisma/seed-bootstrap.ts \
   --module commonjs \
   --target ES2021 \
