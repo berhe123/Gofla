@@ -7,6 +7,9 @@ npx prisma db push --skip-generate
 echo "==> Bootstrapping admin users..."
 node prisma/seed-bootstrap.js
 
+echo "==> Syncing product catalog from bundled images..."
+node prisma/catalog-bootstrap.js
+
 echo "==> Starting API on port ${PORT:-3000}..."
 if [ -f dist/main.js ]; then
   exec node dist/main.js

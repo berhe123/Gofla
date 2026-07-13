@@ -12,3 +12,13 @@ export const CATEGORIES = [
   { slug: 'belts', name: 'Belts' },
   { slug: 'keys', name: 'Keys' },
 ] as const;
+
+export const CATEGORY_ORDER = CATEGORIES.map((c) => c.slug);
+
+export function sortCategoriesByOrder<T extends { slug: string }>(items: T[]): T[] {
+  return [...items].sort((a, b) => {
+    const ai = CATEGORY_ORDER.indexOf(a.slug as (typeof CATEGORY_ORDER)[number]);
+    const bi = CATEGORY_ORDER.indexOf(b.slug as (typeof CATEGORY_ORDER)[number]);
+    return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+  });
+}

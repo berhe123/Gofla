@@ -1,16 +1,41 @@
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, Camera, Shield, Sparkles, Star, Truck, Undo2 } from 'lucide-react';
-import { CATEGORIES } from '@/shared/config';
+import { CATEGORIES, sortCategoriesByOrder } from '@/shared/config';
 import { Button } from '@/shared/ui/button';
 import { Reveal } from '@/shared/ui/reveal';
 import { useProducts } from '@/entities/product/api';
+import { useCategories } from '@/entities/category/api';
+import { flattenCategories } from '@/entities/category/lib';
 import { ProductCard } from '@/entities/product/ui/ProductCard';
 import { LiveDropsSection } from '@/widgets/home/LiveDropsSection';
 import { ShopperVoices } from '@/widgets/home/ShopperVoices';
+import { resolveMediaUrl } from '@/shared/lib/media';
 
 export default function HomePage() {
   const { data: featured } = useProducts({ featured: true, pageSize: 8 });
+  const { data: categories } = useCategories();
+  const { data: catalog } = useProducts({ pageSize: 120 });
+
+  const categoryTiles = useMemo(() => {
+    const fromApi = categories ? sortCategoriesByOrder(flattenCategories(categories)) : [];
+    if (fromApi.length > 0) return fromApi;
+    return CATEGORIES.map((c) => ({ ...c, imageUrl: null, productCount: 0, id: c.slug }));
+  }, [categories]);
+
+  const productsByCategory = useMemo(
+    () =>
+      categoryTiles
+        .map((category) => ({
+          ...category,
+          items: (catalog?.items ?? [])
+            .filter((p) => p.category?.slug === category.slug)
+            .slice(0, 4),
+        }))
+        .filter((group) => group.items.length > 0),
+    [catalog?.items, categoryTiles],
+  );
 
   return (
     <div className="overflow-hidden">
@@ -127,21 +152,66 @@ export default function HomePage() {
           </div>
         </Reveal>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
-          {CATEGORIES.map((c, i) => (
+          {categoryTiles.map((c, i) => (
             <Reveal key={c.slug} delay={i * 0.05}>
               <Link
                 to={`/category/${c.slug}`}
                 className="group relative flex aspect-[3/4] flex-col justify-end overflow-hidden rounded-2xl border border-border bg-gradient-to-b from-muted to-card p-4 transition hover:ember-glow"
               >
-                <span className="font-display text-lg font-semibold">{c.name}</span>
-                <span className="flex items-center gap-1 text-xs text-muted-foreground transition group-hover:text-primary">
-                  Explore <ArrowRight className="h-3 w-3" />
-                </span>
+                {c.imageUrl && (
+                  <>
+                    <img
+                      src={resolveMediaUrl(c.imageUrl)}
+                      alt={c.name}
+                      className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-black/10" />
+                  </>
+                )}
+                <div className="relative z-10">
+                  <span className="font-display text-lg font-semibold text-white drop-shadow">{c.name}</span>
+                  {typeof c.productCount === 'number' && c.productCount > 0 && (
+                    <p className="text-xs text-white/75">{c.productCount} products</p>
+                  )}
+                  <span className="mt-1 flex items-center gap-1 text-xs text-white/80 transition group-hover:text-primary-foreground">
+                    Explore <ArrowRight className="h-3 w-3" />
+                  </span>
+                </div>
               </Link>
             </Reveal>
           ))}
         </div>
       </section>
+
+      {/* COLLECTIONS BY CATEGORY */}
+      {productsByCategory.map((group) => (
+        <section key={group.slug} className="border-y border-border bg-card/30">
+          <div className="container py-16">
+            <Reveal>
+              <div className="mb-8 flex items-end justify-between gap-4">
+                <div>
+                  <h2 className="font-display text-3xl font-bold sm:text-4xl">{group.name}</h2>
+                  <p className="mt-2 text-muted-foreground">
+                    {group.items.length} styles from your {group.name.toLowerCase()} catalog — each photo is its own product.
+                  </p>
+                </div>
+                <Link
+                  to={`/category/${group.slug}`}
+                  className="hidden items-center gap-1 text-sm text-primary sm:flex"
+                >
+                  View all <ArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
+            </Reveal>
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+              {group.items.map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+            </div>
+          </div>
+        </section>
+      ))}
 
       {/* STUDIO SHOWCASE */}
       <section className="border-y border-border bg-card/50">
@@ -190,7 +260,7 @@ export default function HomePage() {
                 {(featured?.items ?? []).slice(0, 3).map((p) => (
                   <img
                     key={p.id}
-                    src={p.images[0]?.url}
+                    src={resolveMediaUrl(p.images[0]?.url)}
                     alt={p.name}
                     className="aspect-square w-full rounded-xl object-cover"
                   />

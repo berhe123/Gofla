@@ -54,6 +54,22 @@ npm --prefix frontend run dev        # http://localhost:5173
 
 Place your images in `backend/uploads/products/<category>/` (e.g. `shoes/shoes-1.jpg`).
 The seeder creates **one product per image file** and serves them from `/uploads/products/...`.
+Product names follow the file: `shoes-3.jpg` → **Shoes 3**.
+
+**Sync catalog after adding or changing images:**
+
+```bash
+npm --prefix backend run catalog:sync
+```
+
+**Before deploying to Render** (images are bundled in the Docker image), compress them for web:
+
+```bash
+npm --prefix backend install
+npm --prefix backend run catalog:optimize
+git add backend/uploads/products
+git commit -m "Add catalog product images"
+```
 
 Optional: set `SEED_IMAGES_PATH` to import from an external folder on first seed:
 

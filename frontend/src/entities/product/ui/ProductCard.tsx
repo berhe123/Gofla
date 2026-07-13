@@ -1,13 +1,16 @@
 import { Link } from 'react-router-dom';
 import { Heart, Star } from 'lucide-react';
+import { useState } from 'react';
 import type { ProductDto } from '@/shared';
 import { cn } from '@/shared/lib/cn';
 import { formatPrice } from '@/shared/lib/format';
+import { resolveMediaUrl } from '@/shared/lib/media';
 import { Badge } from '@/shared/ui/badge';
 import { useToggleWishlist, useWishlist } from '@/features/wishlist/api';
 import { useAuthStore } from '@/entities/user/store';
 
 export function ProductCard({ product }: { product: ProductDto }) {
+  const [imageError, setImageError] = useState(false);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const { data: wishlist } = useWishlist();
   const toggle = useToggleWishlist();
@@ -17,12 +20,20 @@ export function ProductCard({ product }: { product: ProductDto }) {
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all hover:-translate-y-1 hover:ember-glow">
       <Link to={`/product/${product.slug}`} className="relative block aspect-square overflow-hidden bg-muted">
-        <img
-          src={product.images[0]?.url}
-          alt={product.images[0]?.alt ?? product.name}
-          loading="lazy"
-          className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-        />
+        {!imageError && product.images[0]?.url ? (
+          <img
+            src={resolveMediaUrl(product.images[0]?.url)}
+            alt={product.images[0]?.alt ?? product.name}
+            loading="lazy"
+            onError={() => setImageError(true)}
+            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+          />
+        ) : (
+          <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-muted px-4 text-center text-sm text-muted-foreground">
+            <span className="text-xs uppercase tracking-wide">{product.category?.name ?? 'Product'}</span>
+            <span className="font-medium text-foreground">{product.name}</span>
+          </div>
+        )}
         <div className="absolute left-3 top-3 flex flex-col gap-1.5">
           {product.isFeatured && (
             <Badge className="gradient-ember text-white">Featured</Badge>

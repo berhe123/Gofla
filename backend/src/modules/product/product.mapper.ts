@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client';
+import { resolveMediaUrl } from '../../common/utils/media-url';
 
 export type ProductWithRelations = Prisma.ProductGetPayload<{
   include: {
@@ -47,7 +48,7 @@ export function mapProduct(p: ProductWithRelations) {
       .sort((a, b) => a.position - b.position)
       .map((img) => ({
         id: img.id,
-        url: img.url,
+        url: resolveMediaUrl(img.url),
         alt: img.alt,
         position: img.position,
         isPrimary: img.isPrimary,

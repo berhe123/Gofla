@@ -8,6 +8,7 @@ build/
 .vite/
 *.tsbuildinfo
 backend/prisma/seed-bootstrap.js
+backend/prisma/catalog-bootstrap.js
 
 # Env
 .env
@@ -34,7 +35,10 @@ coverage/
 playwright-report/
 test-results/
 
-# Uploads / local storage
-backend/uploads/
+# Uploads / local storage (catalog product images are tracked for deploy)
+backend/uploads/*
+!backend/uploads/products/
+!backend/uploads/products/**
+backend/uploads/studio/
 .minio-data/
 .pg-data/
