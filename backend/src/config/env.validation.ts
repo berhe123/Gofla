@@ -1,5 +1,5 @@
-import { plainToInstance } from 'class-transformer';
-import { IsEnum, IsNumber, IsOptional, IsString, validateSync } from 'class-validator';
+import { plainToInstance, Type } from 'class-transformer';
+import { IsEnum, IsInt, IsOptional, IsString, Max, Min, validateSync } from 'class-validator';
 
 enum NodeEnv {
   Development = 'development',
@@ -12,7 +12,10 @@ class EnvironmentVariables {
   @IsOptional()
   NODE_ENV: NodeEnv = NodeEnv.Development;
 
-  @IsNumber()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(65535)
   @IsOptional()
   PORT = 3000;
 
@@ -31,7 +34,15 @@ class EnvironmentVariables {
 }
 
 export function validateEnv(config: Record<string, unknown>) {
-  const validated = plainToInstance(EnvironmentVariables, config, {
+  const normalized = {
+    ...config,
+    PORT:
+      config.PORT === undefined || config.PORT === ''
+        ? 3000
+        : Number(config.PORT),
+  };
+
+  const validated = plainToInstance(EnvironmentVariables, normalized, {
     enableImplicitConversion: true,
   });
   const errors = validateSync(validated, { skipMissingProperties: false });
