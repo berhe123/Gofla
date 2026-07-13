@@ -46,7 +46,17 @@ git push origin main
 | Build Command | `npm run build` |
 | Output | `dist` |
 
-**Env var:**
+**Env var (recommended — proxy mode, no CORS issues):**
+
+On **Vercel → Settings → Environment Variables**:
+
+| Name | Value |
+|------|--------|
+| `RENDER_API_URL` | `https://YOUR-API.onrender.com` (no trailing slash) |
+
+Do **not** set `VITE_API_URL` when using proxy mode — the build proxies `/api` and `/uploads` through Vercel.
+
+**Alternative (direct API mode):**
 
 ```env
 VITE_API_URL=https://your-api.onrender.com

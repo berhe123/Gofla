@@ -1,8 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../infra/prisma/prisma.service';
-import { resolveMediaUrl } from '../../common/utils/media-url';
 import { CreateCategoryDto, UpdateCategoryDto } from './dto/category.dto';
-
 @Injectable()
 export class CategoryService {
   constructor(private readonly prisma: PrismaService) {}
@@ -20,7 +18,7 @@ export class CategoryService {
         name: c.name,
         slug: c.slug,
         description: c.description,
-        imageUrl: resolveMediaUrl(c.imageUrl),
+        imageUrl: c.imageUrl,
         parentId: c.parentId,
         productCount: c._count.products,
         children: [],

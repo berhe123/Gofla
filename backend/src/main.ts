@@ -19,6 +19,12 @@ async function bootstrap() {
 
   app.useLogger(app.get(Logger));
 
+  // Static product images — register before global prefix / guards.
+  app.useStaticAssets(join(process.cwd(), 'uploads'), {
+    prefix: '/uploads/',
+    maxAge: 60 * 60 * 24 * 7,
+  });
+
   const allowedOrigins = (process.env.CORS_ORIGIN ?? 'http://localhost:5173')
     .split(',')
     .map((origin) => origin.trim())
@@ -67,10 +73,6 @@ async function bootstrap() {
   );
   app.useGlobalFilters(new AllExceptionsFilter());
   app.useGlobalInterceptors(new TransformInterceptor());
-
-  // Serve seeded/uploaded product images statically.
-  // Use process.cwd() so watch mode and built mode resolve the same uploads dir.
-  app.useStaticAssets(join(process.cwd(), 'uploads'), { prefix: '/uploads/' });
 
   // Swagger / OpenAPI
   const config = new DocumentBuilder()

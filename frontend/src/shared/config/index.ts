@@ -1,5 +1,11 @@
+const explicitApiUrl = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '');
+const useProxy =
+  import.meta.env.VITE_USE_API_PROXY === 'true' || (import.meta.env.PROD && !explicitApiUrl);
+
 export const config = {
-  apiUrl: import.meta.env.VITE_API_URL ?? 'http://localhost:3000',
+  /** Empty in production proxy mode — API + uploads go through same origin (Vercel rewrites). */
+  apiUrl: useProxy ? '' : explicitApiUrl || 'http://localhost:3000',
+  useProxy,
   appName: import.meta.env.VITE_APP_NAME ?? 'Gofla',
   stripeKey: import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY ?? '',
 };

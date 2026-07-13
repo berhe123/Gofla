@@ -22,7 +22,7 @@ export const tokenStore = {
 };
 
 export const api: AxiosInstance = axios.create({
-  baseURL: `${config.apiUrl}/api/v1`,
+  baseURL: config.apiUrl ? `${config.apiUrl}/api/v1` : '/api/v1',
   withCredentials: true,
 });
 
@@ -38,7 +38,10 @@ async function refreshAccessToken(): Promise<string | null> {
   const refreshToken = tokenStore.refresh;
   if (!refreshToken) return null;
   try {
-    const res = await axios.post(`${config.apiUrl}/api/v1/auth/refresh`, { refreshToken });
+    const res = await axios.post(
+      config.apiUrl ? `${config.apiUrl}/api/v1/auth/refresh` : '/api/v1/auth/refresh',
+      { refreshToken },
+    );
     const data = res.data?.data ?? res.data;
     tokenStore.set(data.accessToken, data.refreshToken);
     return data.accessToken;
