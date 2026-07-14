@@ -41,8 +41,8 @@ export default function HomePage() {
     <div className="overflow-hidden">
       {/* HERO */}
       <section className="relative grain">
-        <div className="container relative grid gap-10 py-20 lg:grid-cols-2 lg:py-32">
-          <div className="flex flex-col justify-center">
+        <div className="container relative grid gap-8 pt-10 pb-16 lg:grid-cols-2 lg:items-start lg:gap-10 lg:pt-14 lg:pb-20">
+          <div className="flex flex-col justify-start lg:pt-2">
             <motion.span
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -100,13 +100,22 @@ export default function HomePage() {
             initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.1 }}
-            className="relative"
+            className="relative lg:pt-2"
           >
-            <div className="grid grid-cols-2 gap-4">
-              {(featured?.items ?? []).slice(0, 4).map((p, i) => (
-                <div key={p.id} className={i % 2 ? 'mt-8' : ''}>
-                  <ProductCard product={p} />
-                </div>
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
+              {(featured?.items ?? []).slice(0, 4).map((p) => (
+                <Link
+                  key={p.id}
+                  to={`/product/${p.slug}`}
+                  className="block aspect-square overflow-hidden rounded-2xl border border-border bg-muted transition hover:ember-glow"
+                >
+                  <img
+                    src={resolveMediaUrl(p.images[0]?.url)}
+                    alt={p.images[0]?.alt ?? p.name}
+                    loading="lazy"
+                    className="h-full w-full object-cover"
+                  />
+                </Link>
               ))}
             </div>
           </motion.div>
