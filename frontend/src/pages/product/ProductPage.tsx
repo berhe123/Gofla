@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { Heart, Minus, Plus, ShoppingBag, Star, Truck } from 'lucide-react';
 import type { ProductVariantDto } from '@/shared';
 import { formatPrice } from '@/shared/lib/format';
+import { resolveMediaUrl } from '@/shared/lib/media';
 import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
 import { PageLoader } from '@/shared/ui/page-loader';
@@ -129,7 +130,7 @@ export default function ProductPage() {
         <div>
           <div className="aspect-square overflow-hidden rounded-3xl border border-border bg-muted">
             <img
-              src={product.images[activeImage]?.url}
+              src={resolveMediaUrl(product.images[activeImage]?.url)}
               alt={product.images[activeImage]?.alt ?? product.name}
               className="h-full w-full object-cover"
             />
@@ -144,7 +145,7 @@ export default function ProductPage() {
                     i === activeImage ? 'border-primary' : 'border-transparent'
                   }`}
                 >
-                  <img src={img.url} alt="" className="h-full w-full object-cover" />
+                  <img src={resolveMediaUrl(img.url)} alt="" className="h-full w-full object-cover" />
                 </button>
               ))}
             </div>

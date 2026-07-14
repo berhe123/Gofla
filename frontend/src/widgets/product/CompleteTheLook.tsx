@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Sparkles } from 'lucide-react';
 import { formatPrice } from '@/shared/lib/format';
+import { resolveMediaUrl } from '@/shared/lib/media';
 import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
 import { useCompleteTheLook } from '@/features/visual-search/api';
@@ -60,7 +61,7 @@ export function CompleteTheLook({ productId }: { productId: string }) {
           >
             <div className="aspect-square overflow-hidden bg-muted">
               <img
-                src={p.images[0]?.url}
+                src={resolveMediaUrl(p.images[0]?.url)}
                 alt={p.name}
                 className="h-full w-full object-cover transition group-hover:scale-105"
               />

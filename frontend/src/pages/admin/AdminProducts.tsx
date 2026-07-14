@@ -1,6 +1,7 @@
 import { toast } from 'sonner';
 import { Trash2 } from 'lucide-react';
 import { formatPrice } from '@/shared/lib/format';
+import { resolveMediaUrl } from '@/shared/lib/media';
 import { useProducts } from '@/entities/product/api';
 import { useDeleteProduct } from '@/features/admin/api';
 
@@ -28,7 +29,7 @@ export default function AdminProducts() {
               <tr key={p.id} className="border-b border-border last:border-0">
                 <td className="p-4">
                   <div className="flex items-center gap-3">
-                    <img src={p.images[0]?.url} alt="" className="h-10 w-10 rounded-lg object-cover" />
+                    <img src={resolveMediaUrl(p.images[0]?.url)} alt="" className="h-10 w-10 rounded-lg object-cover" />
                     <span className="line-clamp-1 font-medium">{p.name}</span>
                   </div>
                 </td>

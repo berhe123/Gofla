@@ -1,6 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, CheckCircle2, Package, Truck } from 'lucide-react';
 import { classForStatus, formatDate, formatPrice } from '@/shared/lib/format';
+import { resolveMediaUrl } from '@/shared/lib/media';
 import { PageLoader } from '@/shared/ui/page-loader';
 import { useOrder } from '@/entities/order/api';
 
@@ -52,7 +53,7 @@ export default function OrderDetailPage() {
           {order.items.map((item) => (
             <div key={item.id} className="flex gap-4 rounded-2xl border border-border bg-card p-4">
               {item.productImage && (
-                <img src={item.productImage} alt={item.productName} className="h-20 w-20 rounded-xl object-cover" />
+                <img src={resolveMediaUrl(item.productImage)} alt={item.productName} className="h-20 w-20 rounded-xl object-cover" />
               )}
               <div className="flex-1">
                 <p className="font-medium">{item.productName}</p>

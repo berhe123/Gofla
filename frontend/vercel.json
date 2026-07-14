@@ -1,7 +1,19 @@
 {
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/api/:path*",
+      "destination": "https://gofla-1.onrender.com/api/:path*"
+    },
+    {
+      "source": "/uploads/:path*",
+      "destination": "https://gofla-1.onrender.com/uploads/:path*"
+    },
+    {
+      "source": "/health",
+      "destination": "https://gofla-1.onrender.com/v1/health"
+    },
+    {
+      "source": "/((?!api|uploads|health|docs).*)",
       "destination": "/"
     }
   ]

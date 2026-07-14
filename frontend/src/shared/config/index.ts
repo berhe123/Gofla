@@ -1,10 +1,15 @@
+/** Production Render API — used when no VITE_API_URL is set at build time. */
+const DEFAULT_PROD_API = 'https://gofla-1.onrender.com';
+
 const explicitApiUrl = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '');
-const useProxy =
-  import.meta.env.VITE_USE_API_PROXY === 'true' || (import.meta.env.PROD && !explicitApiUrl);
+
+// Vite dev proxy only — production always loads images directly from the API host.
+const useProxy = !import.meta.env.PROD && import.meta.env.VITE_USE_API_PROXY === 'true';
 
 export const config = {
-  /** Empty in production proxy mode — API + uploads go through same origin (Vercel rewrites). */
-  apiUrl: useProxy ? '' : explicitApiUrl || 'http://localhost:3000',
+  apiUrl: useProxy
+    ? ''
+    : explicitApiUrl || (import.meta.env.PROD ? DEFAULT_PROD_API : 'http://localhost:3000'),
   useProxy,
   appName: import.meta.env.VITE_APP_NAME ?? 'Gofla',
   stripeKey: import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY ?? '',

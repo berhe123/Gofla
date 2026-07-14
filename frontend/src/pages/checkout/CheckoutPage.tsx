@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Lock } from 'lucide-react';
 import { formatPrice } from '@/shared/lib/format';
+import { resolveMediaUrl } from '@/shared/lib/media';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { useCart } from '@/entities/cart/api';
@@ -85,7 +86,7 @@ export default function CheckoutPage() {
           <div className="max-h-52 space-y-3 overflow-auto">
             {cart.items.map((item) => (
               <div key={item.id} className="flex items-center gap-3">
-                <img src={item.product.images[0]?.url} alt="" className="h-12 w-12 rounded-lg object-cover" />
+                <img src={resolveMediaUrl(item.product.images[0]?.url)} alt="" className="h-12 w-12 rounded-lg object-cover" />
                 <div className="flex-1 text-sm">
                   <p className="line-clamp-1">{item.product.name}</p>
                   <p className="text-muted-foreground">× {item.quantity}</p>
