@@ -33,7 +33,11 @@ export class StudioController {
   ) {
     let storedImageUrl: string | undefined;
     if (file) {
-      storedImageUrl = await this.storage.upload(file.buffer, file.originalname, 'studio');
+      try {
+        storedImageUrl = await this.storage.upload(file.buffer, file.originalname, 'studio');
+      } catch {
+        // Upload storage can fail on ephemeral hosts — search still works without persisting the file.
+      }
     }
     return this.studio.visualSearch({ color, category, storedImageUrl });
   }

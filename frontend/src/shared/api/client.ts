@@ -29,6 +29,10 @@ export const api: AxiosInstance = axios.create({
 api.interceptors.request.use((cfg) => {
   const token = tokenStore.access;
   if (token) cfg.headers.Authorization = `Bearer ${token}`;
+  // Let the browser set multipart boundaries for FormData uploads.
+  if (cfg.data instanceof FormData) {
+    delete cfg.headers['Content-Type'];
+  }
   return cfg;
 });
 
@@ -56,6 +60,9 @@ api.interceptors.response.use(
   async (error: AxiosError) => {
     const original = error.config as typeof error.config & { _retry?: boolean };
     if (error.response?.status === 401 && original && !original._retry) {
+      if (original.data instanceof FormData) {
+        return Promise.reject(error);
+      }
       original._retry = true;
       refreshing = refreshing ?? refreshAccessToken();
       const newToken = await refreshing;

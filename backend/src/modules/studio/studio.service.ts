@@ -26,21 +26,29 @@ export class StudioService {
 
   /** Snap-to-find: rank in-stock products by heuristic visual similarity. */
   async visualSearch(params: { category?: string; color?: string; storedImageUrl?: string }) {
-    const where: Prisma.ProductWhereInput = { isActive: true };
-    if (params.category) where.category = { slug: params.category };
-
-    const candidates = await this.prisma.product.findMany({
-      where,
-      include: PRODUCT_INCLUDE,
-      take: 60,
-      orderBy: [{ isFeatured: 'desc' }, { rating: 'desc' }],
-    });
-
     const color = params.color?.toLowerCase();
+
+    const loadCandidates = async (category?: string) => {
+      const where: Prisma.ProductWhereInput = { isActive: true };
+      if (category) where.category = { slug: category };
+      return this.prisma.product.findMany({
+        where,
+        include: PRODUCT_INCLUDE,
+        take: 60,
+        orderBy: [{ isFeatured: 'desc' }, { rating: 'desc' }],
+      });
+    };
+
+    let candidates = await loadCandidates(params.category);
+    if (candidates.length === 0 && params.category) {
+      candidates = await loadCandidates();
+    }
+
     const ranked = candidates
       .map((p) => {
         let score = p.rating / 5; // base 0..1
         if (p.isFeatured) score += 0.15;
+        if (params.category && p.category.slug === params.category) score += 0.2;
         if (color && p.variants.some((v) => v.color?.toLowerCase() === color)) score += 0.4;
         if (color && p.variants.some((v) => v.color?.toLowerCase().includes(color))) score += 0.15;
         return { product: mapProduct(p), score: Number(Math.min(score, 1).toFixed(3)) };

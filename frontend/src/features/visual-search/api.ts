@@ -1,6 +1,7 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import type { ProductDto } from '@/shared';
 import { api, unwrap } from '@/shared/api/client';
+import { runVisualSearch } from './runVisualSearch';
 
 export interface VisualSearchResult {
   query: { color: string | null; category: string | null; image: string | null };
@@ -27,13 +28,7 @@ export interface CompleteTheLook {
 
 export function useVisualSearch() {
   return useMutation({
-    mutationFn: async (payload: { file?: File; color?: string; category?: string }) => {
-      const form = new FormData();
-      if (payload.file) form.append('image', payload.file);
-      if (payload.color) form.append('color', payload.color);
-      if (payload.category) form.append('category', payload.category);
-      return unwrap<VisualSearchResult>(api.post('/search/visual', form));
-    },
+    mutationFn: (payload: { file?: File; color?: string; category?: string }) => runVisualSearch(payload),
   });
 }
 

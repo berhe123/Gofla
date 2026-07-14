@@ -36,6 +36,11 @@ export default function StudioPage() {
     search.mutate(
       { file, color, category },
       {
+        onSuccess: (data) => {
+          if (data.results.length === 0) {
+            toast.message('No close matches — showing popular picks instead');
+          }
+        },
         onError: () => toast.error('Visual search failed. Please try again.'),
       },
     );
@@ -114,10 +119,14 @@ export default function StudioPage() {
           </div>
         </div>
 
-        <Button size="lg" className="mt-6 w-full" onClick={run} disabled={search.isPending}>
+        <Button type="button" size="lg" className="mt-6 w-full" onClick={run} disabled={search.isPending}>
           <Camera className="h-5 w-5" /> {search.isPending ? 'Searching…' : 'Find matches'}
         </Button>
       </div>
+
+      {search.isPending && (
+        <p className="mx-auto mt-6 max-w-2xl text-center text-sm text-muted-foreground">Finding matches…</p>
+      )}
 
       {search.isError && (
         <p className="mx-auto mt-6 max-w-2xl text-center text-sm text-destructive">
