@@ -39,7 +39,12 @@ export class StudioController {
         // Upload storage can fail on ephemeral hosts — search still works without persisting the file.
       }
     }
-    return this.studio.visualSearch({ color, category, storedImageUrl });
+    return this.studio.visualSearch({
+      color,
+      category,
+      storedImageUrl,
+      imageBuffer: file?.buffer,
+    });
   }
 
   @Public()

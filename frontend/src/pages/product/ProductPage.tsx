@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Heart, Minus, Plus, ShoppingBag, Star, Truck } from 'lucide-react';
+import { Heart, Minus, Plus, ShoppingBag, Star, Truck, Zap } from 'lucide-react';
 import type { ProductVariantDto } from '@/shared';
 import { formatPrice } from '@/shared/lib/format';
 import { resolveMediaUrl } from '@/shared/lib/media';
@@ -10,7 +10,7 @@ import { Badge } from '@/shared/ui/badge';
 import { PageLoader } from '@/shared/ui/page-loader';
 import { useProduct, useRelatedProducts } from '@/entities/product/api';
 import { ProductCard } from '@/entities/product/ui/ProductCard';
-import { useAddToCart } from '@/entities/cart/api';
+import { useAddToCart, useClearCart } from '@/entities/cart/api';
 import { useAuthStore } from '@/entities/user/store';
 import { useToggleWishlist, useWishlist } from '@/features/wishlist/api';
 import { CompleteTheLook } from '@/widgets/product/CompleteTheLook';
@@ -22,6 +22,8 @@ export default function ProductPage() {
   const { data: product, isLoading, isError } = useProduct(slug);
   const { data: related } = useRelatedProducts(product?.id);
   const addToCart = useAddToCart();
+  const clearCart = useClearCart();
+  const [buyingNow, setBuyingNow] = useState(false);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const { data: wishlist } = useWishlist();
   const toggleWishlist = useToggleWishlist();
@@ -107,6 +109,33 @@ export default function ProductPage() {
         onError: () => toast.error('Could not add to cart'),
       },
     );
+  };
+
+  const handleBuyNow = async () => {
+    if (!isAuthenticated) {
+      toast.error('Please sign in to buy.');
+      navigate('/login', { state: { from: `/product/${slug}` } });
+      return;
+    }
+    if (!selectedVariant) {
+      toast.error('Please select the available options.');
+      return;
+    }
+    if (selectedVariant.stock < qty) {
+      toast.error('Not enough stock for this quantity.');
+      return;
+    }
+
+    setBuyingNow(true);
+    try {
+      await clearCart.mutateAsync();
+      await addToCart.mutateAsync({ variantId: selectedVariant.id, quantity: qty });
+      navigate('/checkout');
+    } catch {
+      toast.error('Could not start checkout. Please try again.');
+    } finally {
+      setBuyingNow(false);
+    }
   };
 
   return (
@@ -232,19 +261,39 @@ export default function ProductPage() {
             </span>
           </div>
 
-          <div className="mt-6 flex gap-3">
-            <Button size="lg" className="flex-1" onClick={handleAdd} disabled={addToCart.isPending}>
-              <ShoppingBag className="h-5 w-5" /> Add to cart
+          <div className="mt-6 flex flex-col gap-3">
+            <Button
+              type="button"
+              size="lg"
+              className="w-full"
+              onClick={handleBuyNow}
+              disabled={buyingNow || addToCart.isPending || clearCart.isPending}
+            >
+              <Zap className="h-5 w-5" />
+              {buyingNow ? 'Going to checkout…' : 'Buy now'}
             </Button>
-            {isAuthenticated && (
+            <div className="flex gap-3">
               <Button
+                type="button"
                 size="lg"
                 variant="outline"
-                onClick={() => toggleWishlist.mutate({ productId: product.id, active: isWished })}
+                className="flex-1"
+                onClick={handleAdd}
+                disabled={buyingNow || addToCart.isPending}
               >
-                <Heart className={isWished ? 'h-5 w-5 fill-primary text-primary' : 'h-5 w-5'} />
+                <ShoppingBag className="h-5 w-5" /> Add to cart
               </Button>
-            )}
+              {isAuthenticated && (
+                <Button
+                  type="button"
+                  size="lg"
+                  variant="outline"
+                  onClick={() => toggleWishlist.mutate({ productId: product.id, active: isWished })}
+                >
+                  <Heart className={isWished ? 'h-5 w-5 fill-primary text-primary' : 'h-5 w-5'} />
+                </Button>
+              )}
+            </div>
           </div>
 
           <div className="mt-6 flex items-center gap-2 rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground">

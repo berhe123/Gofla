@@ -30,6 +30,14 @@ export function useUpdateCartItem() {
   });
 }
 
+export function useClearCart() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => unwrap<CartDto>(api.delete('/cart')),
+    onSuccess: (data) => qc.setQueryData(['cart'], data),
+  });
+}
+
 export function useRemoveCartItem() {
   const qc = useQueryClient();
   return useMutation({

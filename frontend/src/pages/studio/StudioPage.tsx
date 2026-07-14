@@ -38,7 +38,9 @@ export default function StudioPage() {
       {
         onSuccess: (data) => {
           if (data.results.length === 0) {
-            toast.message('No close matches — showing popular picks instead');
+            toast.message('No close visual matches found — try a clearer product photo');
+          } else if (data.engine.includes('fallback')) {
+            toast.message('Showing closest available matches');
           }
         },
         onError: () => toast.error('Visual search failed. Please try again.'),
