@@ -22,8 +22,8 @@ export class StorageService {
     const dir = path.join(this.root, folder);
     await fs.promises.mkdir(dir, { recursive: true });
     await fs.promises.writeFile(path.join(dir, fileName), buffer);
-    const apiUrl = this.config.get<string>('apiUrl');
-    const url = `${apiUrl}/uploads/${folder}/${fileName}`;
+    const apiUrl = (this.config.get<string>('apiUrl') || '').replace(/\/$/, '');
+    const url = `/uploads/${folder}/${fileName}`;
     this.logger.log(`Stored file ${url}`);
     return url;
   }

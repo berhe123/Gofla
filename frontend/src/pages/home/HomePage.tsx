@@ -11,6 +11,7 @@ import { flattenCategories } from '@/entities/category/lib';
 import { ProductCard } from '@/entities/product/ui/ProductCard';
 import { LiveDropsSection } from '@/widgets/home/LiveDropsSection';
 import { ShopperVoices } from '@/widgets/home/ShopperVoices';
+import { StudioDropzone } from '@/features/visual-search/ui/StudioDropzone';
 import { resolveMediaUrl } from '@/shared/lib/media';
 
 export default function HomePage() {
@@ -259,12 +260,7 @@ export default function HomePage() {
           </Reveal>
           <Reveal delay={0.1}>
             <div className="rounded-3xl border border-border bg-background p-8 ember-glow">
-              <div className="flex items-center gap-3 rounded-2xl border border-dashed border-border p-6 text-center">
-                <Camera className="mx-auto h-10 w-10 text-primary" />
-              </div>
-              <p className="mt-4 text-center text-sm text-muted-foreground">
-                Drop an image to find your match
-              </p>
+              <StudioDropzone redirectOnSelect compact />
               <div className="mt-6 grid grid-cols-3 gap-3">
                 {(featured?.items ?? []).slice(0, 3).map((p) => (
                   <img

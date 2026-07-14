@@ -32,9 +32,7 @@ export function useVisualSearch() {
       if (payload.file) form.append('image', payload.file);
       if (payload.color) form.append('color', payload.color);
       if (payload.category) form.append('category', payload.category);
-      return unwrap<VisualSearchResult>(
-        api.post('/search/visual', form, { headers: { 'Content-Type': 'multipart/form-data' } }),
-      );
+      return unwrap<VisualSearchResult>(api.post('/search/visual', form));
     },
   });
 }
